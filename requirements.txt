@@ -4,3 +4,4 @@ pandas
 pyarrow
 mlflow
 streamlit
+setuptools  # provides the distutils shim pyspark needs on Python 3.12+

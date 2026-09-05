@@ -1,0 +1,9 @@
+# Kept separate from the root requirements: pyhive's transport stack is the
+# most likely thing to fail to build on Windows, and the dashboard still runs
+# without it via the CSV snapshot fallback.
+streamlit
+altair
+pandas
+pyhive[hive]
+thrift
+pure-sasl

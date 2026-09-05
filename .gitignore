@@ -6,3 +6,8 @@ __pycache__/
 *.pyc
 .ipynb_checkpoints/
 .env
+dashboard/data_cache/
+ml/mlruns/
+ml/last_run_metrics.json
+hdfs_scripts/upload_manifest.csv
+venv/
