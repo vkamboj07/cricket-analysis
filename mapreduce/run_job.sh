@@ -25,14 +25,27 @@ echo "streaming jar: $JAR"
 # Output dir must not exist; MapReduce refuses to overwrite.
 run hdfs dfs -rm -r -f "$OUTPUT"
 
+# Two ordering/environment constraints, both of which fail confusingly:
+#
+# 1. Generic options (-D, -files) must come before the streaming options
+#    (-partitioner, -mapper, ...). GenericOptionsParser stops at the first
+#    non-generic argument, so a -files after -partitioner is never parsed and
+#    the job dies with "Unrecognized option: -files".
+#
+# 2. -cmdenv PYTHONPATH=. is required. Each -files entry is symlinked into the
+#    task working dir from its own filecache slot, and Python resolves a
+#    symlinked script to its real directory when setting sys.path[0]. Without
+#    this the mapper looks for phase_utils in filecache/<n>/ and dies with
+#    "ImportError: No module named 'phase_utils'".
 run hadoop jar "$JAR" \
   -D mapreduce.job.name="bowler_economy_by_phase" \
   -D mapreduce.job.reduces=4 \
   -D stream.num.map.output.key.fields=3 \
   -D mapreduce.map.output.key.field.separator=$'\t' \
   -D mapreduce.partition.keypartitioner.options=-k1,3 \
-  -partitioner org.apache.hadoop.mapred.lib.KeyFieldBasedPartitioner \
   -files /workspace/mapreduce/mapper.py,/workspace/mapreduce/reducer.py,/workspace/mapreduce/phase_utils.py \
+  -partitioner org.apache.hadoop.mapred.lib.KeyFieldBasedPartitioner \
+  -cmdenv PYTHONPATH=. \
   -mapper "python3 mapper.py" \
   -reducer "python3 reducer.py" \
   -input "$INPUT" \

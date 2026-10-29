@@ -3,11 +3,16 @@
 
 Emits one record per legal-or-extra delivery:
     key   = bowler_id \t match_type \t phase
-    value = runs_conceded \t legal_ball \t wicket
+    value = runs_conceded \t legal_ball \t wicket \t dot_ball
 
 Runs conceded are charged to the bowler for wides and no-balls but not for
 byes/legbyes, which are not the bowler's fault. Wides and no-balls do not
 count toward balls bowled.
+
+A dot ball is a LEGAL ball on which the bowler is charged no runs, using the
+same charging rule as runs_conceded. So wides and no-balls are never dots, a
+wicket ball with no runs is a dot, and a bye or legbye ball is a dot (those runs
+are not the bowler's). Some sources do not count bye balls as dots.
 """
 import sys
 
@@ -47,10 +52,12 @@ def main():
 
         legal_ball = 0 if (wides or noballs) else 1
         wicket = 1 if is_true(row["is_wicket"]) else 0
+        dot_ball = 1 if (legal_ball and runs_conceded == 0) else 0
 
         sys.stdout.write(
-            "%s\t%s\t%s\t%d\t%d\t%d\n"
-            % (bowler_id, row["match_type"], phase, runs_conceded, legal_ball, wicket)
+            "%s\t%s\t%s\t%d\t%d\t%d\t%d\n"
+            % (bowler_id, row["match_type"], phase, runs_conceded, legal_ball, wicket,
+               dot_ball)
         )
 
     if bad_lines:

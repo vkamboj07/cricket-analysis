@@ -16,7 +16,8 @@ run() {
 for f in 01_create_matches_table.hql \
          02_create_deliveries_table.hql \
          03_create_player_registry_table.hql \
-         04_create_bowler_economy_table.hql \n         05_create_win_probability_table.hql; do
+         04_create_bowler_economy_table.hql \
+         05_create_win_probability_table.hql; do
   echo "=== $f ==="
   run "/workspace/hive/$f"
 done

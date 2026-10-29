@@ -29,12 +29,26 @@ STATE_FEATURES = [
     "current_score", "wickets_down", "wickets_remaining", "balls_remaining",
     "current_run_rate", "runs_required", "required_run_rate", "run_rate_diff",
     "resources_left", "runs_per_wicket_needed",
+]
+# Recent momentum. Never null in the training table (every ball has a history),
+# but unknowable for a hypothetical state in the dashboard's what-if view, so
+# these go through the Imputer alongside the form features rather than straight
+# into the assembler -- otherwise scoring a hypothetical state fails with
+# "Encountered null while assembling a row".
+MOMENTUM_FEATURES = [
     "runs_last_12", "wickets_last_12", "runs_last_30", "wickets_last_30",
 ]
 FORM_FEATURES = [
     "striker_rolling_sr", "striker_rolling_avg",
     "nonstriker_rolling_sr", "bowler_rolling_econ",
 ]
+IMPUTED_FEATURES = MOMENTUM_FEATURES + FORM_FEATURES
+# Who is playing. Both are known before the first ball and are never null (the training table has
+# exactly four gender x team_type segments), so they go straight into the assembler. Added after
+# step 6 showed the model over-predicted women's chases and under-predicted men's club chases
+# because it could not tell them apart (see CLAUDE.md, step 6b). The evaluate_*.py scripts keep
+# their own pre-6b recipe on purpose, so their "baseline" is the model as it was before this.
+CONTEXT_FEATURES = ["is_female", "is_international"]
 
 # When no balls remain the required rate is undefined; cap rather than drop,
 # since those rows are legitimate end-of-chase states.
@@ -61,7 +75,9 @@ def prepare(df):
           .withColumn("runs_per_wicket_needed",
                       F.coalesce("runs_per_wicket_needed",
                                  F.col("runs_required").cast("double")))
-          .withColumn(LABEL, F.col(LABEL).cast("double")))
+          .withColumn(LABEL, F.col(LABEL).cast("double"))
+          .withColumn("is_female", (F.col("gender") == "female").cast("double"))
+          .withColumn("is_international", (F.col("team_type") == "international").cast("double")))
     return df.filter(F.col(LABEL).isNotNull())
 
 
@@ -81,8 +97,8 @@ def chronological_split(df, test_fraction=0.2):
 
 def build_pipeline(max_iter, max_depth):
     imputer = Imputer(
-        inputCols=FORM_FEATURES,
-        outputCols=[f"{c}_imp" for c in FORM_FEATURES],
+        inputCols=IMPUTED_FEATURES,
+        outputCols=[f"{c}_imp" for c in IMPUTED_FEATURES],
         strategy="median",
     )
     indexer = StringIndexer(inputCol="match_type", outputCol="match_type_idx",
@@ -90,7 +106,8 @@ def build_pipeline(max_iter, max_depth):
     encoder = OneHotEncoder(inputCols=["match_type_idx"],
                             outputCols=["match_type_vec"])
     assembler = VectorAssembler(
-        inputCols=STATE_FEATURES + [f"{c}_imp" for c in FORM_FEATURES] + ["match_type_vec"],
+        inputCols=STATE_FEATURES + [f"{c}_imp" for c in IMPUTED_FEATURES]
+                  + CONTEXT_FEATURES + ["match_type_vec"],
         outputCol="features",
         # "error", not "keep": keep turns stray nulls into NaN, which GBT
         # rejects deep inside training with an opaque message. Fail loudly at
@@ -172,7 +189,9 @@ def main():
                                "max_depth": args.max_depth,
                                "test_cutoff_season": cutoff,
                                "state_features": ",".join(STATE_FEATURES),
-                               "form_features": ",".join(FORM_FEATURES)})
+                               "momentum_features": ",".join(MOMENTUM_FEATURES),
+                               "form_features": ",".join(FORM_FEATURES),
+                               "context_features": ",".join(CONTEXT_FEATURES)})
             mlflow.log_metrics({k: float(v) for k, v in metrics.items()})
         print("logged run to /workspace/ml/mlruns")
 
