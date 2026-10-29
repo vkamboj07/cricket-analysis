@@ -17,3 +17,7 @@ venv/
 *.bak*
 verify_*.txt
 docs/report_parts/
+notebooks/cache/
+# local-only copies of the report and viva notes
+docs/Project_Report.docx
+docs/Viva_Cheat_Sheet.pdf

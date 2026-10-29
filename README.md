@@ -77,7 +77,8 @@ The dashboard reads Hive when PyHive is available and otherwise falls back to th
 | `ml/` | Training, scoring, calibration, WPA, model comparison, feature importance, evaluation and verification scripts, what-if scorer |
 | `dashboard/` | Streamlit app, data access layer, snapshot export |
 | `docker/`, `docker-compose.yml`, `hadoop.env` | The 10-container cluster |
-| `docs/` | Full project report, literature survey, viva cheat sheet, detailed run instructions (`RUNNING.md`) |
+| `notebooks/` | `Cricket_Win_Probability_Pipeline.ipynb`: the whole project in one runnable notebook (load, process, visualise, features, models, calibration, WPA, importance) |
+| `docs/` | Full project report, literature survey, detailed run instructions (`RUNNING.md`) |
 | `CLAUDE.md` | Working notes: verified numbers, bugs found, environment quirks, roadmap |
 
 ## Quick start
@@ -114,8 +115,8 @@ There is no automated unit-test suite yet.
 
 ## Documentation
 
-- [`docs/PROJECT_REPORT.md`](docs/PROJECT_REPORT.md) / [`Project_Report.docx`](docs/Project_Report.docx): full evidence-based report
-- [`docs/Viva_Cheat_Sheet.pdf`](docs/Viva_Cheat_Sheet.pdf): one-page summary
+- [`docs/PROJECT_REPORT.md`](docs/PROJECT_REPORT.md): full evidence-based report
+- [`notebooks/Cricket_Win_Probability_Pipeline.ipynb`](notebooks/Cricket_Win_Probability_Pipeline.ipynb): the whole project in one runnable notebook
 - [`docs/literature_review.pdf`](docs/literature_review.pdf): literature survey
 - [`CLAUDE.md`](CLAUDE.md): detailed progress notes and roadmap
 

@@ -27,6 +27,7 @@ on Windows needs winutils shims and is painful.
 | `features/` | `match_state_features.py`, `player_form_features.py`, `build_training_table.py` |
 | `ml/` | `train_win_probability.py`, `score_all_matches.py`, `predict_live_state.py` |
 | `dashboard/` | `app.py`, `data_access.py`, `export_snapshots.sh`, `data_cache/` (gitignored TSV snapshots) |
+| `notebooks/` | `Cricket_Win_Probability_Pipeline.ipynb`: pandas/scikit-learn walk-through on a random sample (default 2,500 matches; `SAMPLE_MATCHES=None` for all). Runs the real mapper/reducer and checks them against pandas; leakage checks on momentum and form; cache in `notebooks/cache/` (gitignored) |
 | `docker/` | Custom Dockerfiles: nodemanager (python3), spark-master and spark-worker (numpy) |
 | `docker-compose.yml`, `hadoop.env` | Cluster definition and Hadoop/YARN config |
 
@@ -293,7 +294,7 @@ test (does the earlier record predict later meetings beyond the expectation?), w
   associate sides (e.g. T20 powerplay economy 3.6 with 68% dots; checked against raw deliveries, real data, not a pipeline
   bug) so the view carries a warning; (b) Altair `sort="x"` on a layered chart did not order the bars, so the order is now explicit.
   The calibrated probability is shown only as an aggregate reliability chart, not per match (would need another ~100 MB snapshot).
-- **Full project report** (`docs/PROJECT_REPORT.md`, Word copy `docs/Project_Report.docx`): evidence-based 14-chapter report, status table, testing report, demo script, slide outline, 25 viva Q&A, readiness assessment and the list of information still needed from the team. Numbers in it are the post-6b ones.
+- **Full project report** (`docs/PROJECT_REPORT.md`; a Word copy and a viva cheat sheet exist locally in `docs/` but are gitignored): evidence-based 14-chapter report, status table, testing report, demo script, slide outline, 25 viva Q&A, readiness assessment and the list of information still needed from the team. Numbers in it are the post-6b ones.
 - Documents produced (outside the repo): synopsis, literature survey table, project charter (docx + published artifact).
 
 ### Bugs found and fixed (read before debugging similar symptoms)
@@ -342,8 +343,10 @@ stretch goals, not requirements. (GBT is the model of record for pipeline contin
   consolidated re-run, then re-fit the calibrator. Steps 5 and 6 evaluated features without changing production.
 - Wherever the over-optimism is explained (report, viva), use the corrected cause (missing gender/level context plus
   women's cricket doubling its share), not "era shift".
-- The published artifact and the first Word charter quote Brier 0.120 / Log-Loss 0.373 and describe them as measured on
-  unseen seasons. Held-out values are 0.122 / 0.378 (section 4); update those if they are going to be presented.
+- The published artifact (https://claude.ai/artifact/28DaSSvnKqR41Sa3vVNKKx, version 3) and the first Word charter
+  (`BallbyBallCharter_updated.docx`, in Downloads; the original is untouched) were refreshed with held-out figures (AUC 0.913,
+  Brier 0.120, Log-Loss 0.373), current component statuses and the corrected explanation. `BallbyBallCharterPlain.docx` is a
+  forward-looking plan with no progress claims and was left as is.
 
 ## 7. Design invariants - do not break these
 
